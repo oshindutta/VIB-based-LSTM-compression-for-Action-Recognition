@@ -19,6 +19,7 @@ Official implementation of **[A Variational Information Bottleneck Based Method 
 - [Key Results](#key-results)
 - [Edge Deployment](#edge-deployment-inference-on-raspberry-pi-3)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Usage](#usage)
   - [CNN-LSTM Compression](#compress-a-cnn-lstm-model)
   - [End-to-End LSTM Compression](#compress-an-end-to-end-lstm-model)
@@ -144,73 +145,111 @@ pip install efficientnet_pytorch
 
 ---
 
-## Usage
+## Quick Start
 
-All scripts accept positional arguments. Paths with defaults can be overridden; required arguments will error if omitted. Run any script with `bash scripts/<name>.sh --help` to see its inline usage comment.
+Full CNN-LSTM compression pipeline on UCF11:
 
-### Compress a CNN-LSTM Model
-
-**Train and prune from scratch:**
 ```bash
-bash scripts/train_cnn_vib_scratch.sh <dataset_path> <save_dir>
+# 1. Prune a pre-trained model
+bash scripts/train_cnn_vib_pretrained.sh UCF11_updated_mpg-frames/ naive_lstm.pth VIB_checkpoint/
+
+# 2. Fine-tune the pruned model
+bash scripts/finetune_cnn_vib.sh UCF11_updated_mpg-frames/ VIB_checkpoint/best.pth.tar VIB_finetuned/
+
+# 3. Evaluate
+bash scripts/evaluate.sh UCF11_updated_mpg-frames/ VIB_finetuned/best.pth.tar VIB_finetuned/
+
+# 4. Convert to a dense compressed model for deployment
+bash scripts/convert_to_dense.sh VIB_finetuned/best.pth.tar UCF11_updated_mpg-frames/
 ```
 
-**Prune a pre-trained CNN-LSTM model:**
-```bash
-bash scripts/train_cnn_vib_pretrained.sh <dataset_path> <path_to_model> <save_dir>
-```
-
-**Fine-tune a pruned CNN-VIB-LSTM model:**
-```bash
-bash scripts/finetune_cnn_vib.sh <dataset_path> <path_to_model> <save_dir>
-```
-
-**Resume pruning from a checkpoint:**
-```bash
-bash scripts/resume_cnn_vib.sh <dataset_path> <path_to_checkpoint> <save_dir>
-```
+See [Usage](#usage) below for all options, flags, and the end-to-end LSTM track.
 
 ---
 
-### Compress an End-to-End LSTM Model
+## Usage
 
-**Train and prune from scratch:**
+### Pipeline Overview
+
+VIB-LSTM compression follows a two-stage pipeline. Choose the track based on your architecture:
+
+| Track | When to use | Scripts |
+|---|---|---|
+| **CNN-LSTM** | CNN feature extractor + LSTM classifier | `scripts/train_cnn_vib_*.sh` |
+| **End-to-End LSTM** | Raw frames fed directly into LSTM (no CNN) | `scripts/train_e2e_vib_*.sh` |
+
+Both tracks follow the same four stages:
+
+```
+[1] Train/Prune  →  [2] Fine-tune (optional)  →  [3] Evaluate  →  [4] Convert to dense
+```
+
+The key hyperparameter throughout is `--kml` (compression multiplier). Higher values prune more aggressively. Start with `--kml 2` and increase if accuracy holds.
+
+---
+
+### Stage 1 — Train and Prune
+
+**Starting from scratch** (trains a naive LSTM, then applies VIB pruning in one pass):
 ```bash
+# CNN-LSTM track
+bash scripts/train_cnn_vib_scratch.sh <dataset_path> <save_dir>
+
+# End-to-end LSTM track
 bash scripts/train_e2e_vib_scratch.sh <dataset_path> <save_dir>
 ```
 
-**Prune a pre-trained end-to-end LSTM:**
+**Starting from a pre-trained LSTM checkpoint** (recommended — faster convergence, better accuracy at high compression):
 ```bash
+# CNN-LSTM track
+bash scripts/train_cnn_vib_pretrained.sh <dataset_path> <path_to_model> <save_dir>
+
+# End-to-end LSTM track
 bash scripts/train_e2e_vib_pretrained.sh <dataset_path> <path_to_model> <save_dir>
 ```
 
-**Fine-tune a pruned end-to-end VIB-LSTM:**
-```bash
-bash scripts/finetune_e2e_vib.sh <dataset_path> <path_to_model> <save_dir>
-```
+> **Tip:** Use the pretrained path if you have an existing LSTM trained on your dataset. VIB layers initialize around the pre-trained weights, preserving accuracy at higher compression ratios.
 
-**Resume pruning from a checkpoint:**
+**Resuming an interrupted run:**
 ```bash
+bash scripts/resume_cnn_vib.sh <dataset_path> <path_to_checkpoint> <save_dir>
 bash scripts/resume_e2e_vib.sh <dataset_path> <path_to_checkpoint> <save_dir>
 ```
 
 ---
 
-### Evaluate a Trained Model
+### Stage 2 — Fine-tune (Optional)
+
+After pruning, fine-tune with VIB masks frozen to recover any accuracy drop. Recommended when targeting high compression ratios (`--kml > 3`).
+
+```bash
+bash scripts/finetune_cnn_vib.sh  <dataset_path> <path_to_pruned_model> <save_dir>
+bash scripts/finetune_e2e_vib.sh  <dataset_path> <path_to_pruned_model> <save_dir>
+```
+
+---
+
+### Stage 3 — Evaluate
 
 ```bash
 bash scripts/evaluate.sh <dataset_path> <path_to_checkpoint> <save_dir>
 ```
 
-> Adjust `--img_dim1` / `--img_dim2` inside [scripts/evaluate.sh](scripts/evaluate.sh) to match the model's expected input size.
+> Adjust `--img_dim1` / `--img_dim2` in [scripts/evaluate.sh](scripts/evaluate.sh) to match your model's input size (299×299 for InceptionNet-v3, 160×120 for end-to-end).
 
 ---
 
-### Convert VIB Sparse Model to Dense-Compressed
+### Stage 4 — Convert to Dense-Compressed Model
+
+Strips the VIB layers and materializes the pruned weight matrices into a smaller, deployment-ready model with no runtime overhead.
 
 ```bash
 bash scripts/convert_to_dense.sh <path_to_VIB_model> <dataset_path>
 ```
+
+Output is saved to `CompressedIBmodels/`. This is the model used for the edge deployment benchmarks (Raspberry Pi 3, ~13 ms inference).
+
+---
 
 ---
 
