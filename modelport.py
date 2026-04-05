@@ -3,9 +3,9 @@ import os
 import sys
 import torch
 import torch.nn as nn
-from model_VIBLSTM import *
-from modelcomp import *
-from datasetucf11 import *
+from models.model_VIBLSTM import *
+from models.modelcomp import *
+from datasets.datasetucf11 import *
 from torch.utils.data import DataLoader
 import numpy as np
 

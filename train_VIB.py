@@ -4,9 +4,9 @@ import os
 import numpy as np
 #import itertools
 #import shutil
-from model_VIBLSTM import *
+from models.model_VIBLSTM import *
 #from modele2eVIBLSTM import *
-from datasetucf11 import *
+from datasets.datasetucf11 import *
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 import argparse

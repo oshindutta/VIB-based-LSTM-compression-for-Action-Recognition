@@ -1,9 +1,11 @@
 import torch
+import torch.nn as nn
 import sys
+import os
 import numpy as np
 import itertools
-from mymodel import *
-from dataset import *
+from models.modelcomp import *
+from datasets.datasetucf11 import *
 #from prune_model import*
 from torch.utils.data import DataLoader
 from torch.autograd import Variable

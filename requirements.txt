@@ -1,0 +1,11 @@
+# Core deep learning
+torch==1.2.0
+torchvision==0.4.0
+
+# Numerical computing
+numpy==1.19.1
+
+# Image processing
+Pillow>=6.2.0
+
+git+https://github.com/lukemelas/EfficientNet-PyTorch.git#egg=efficientnet_pytorch
