@@ -78,7 +78,7 @@ This paper proposes a **Variational Information Bottleneck (VIB)**-based pruning
 | VIB-LSTM + ISS | 21.86M | 1,680 | 90.2% |
 | EfficientNet + VIB-LSTM | 7.8M | 1,680 | 96.6% |
 
-> VIB-LSTM achieves **16,360× compression** of LSTM parameters over Naïve-CNN-LSTM while maintaining full accuracy — outperforming TR-LSTM (25×) and ISS (210×) by orders of magnitude.
+> VIB-LSTM achieves **16,360× compression** of LSTM parameters over Naïve-CNN-LSTM while maintaining full accuracy — outperforming TR-LSTM (25×) and ISS (210×) by orders of magnitude. Combining VIB-LSTM with ISS pushes compression further to **19,976×** with only a negligible 8.3% drop in accuracy.
 
 <p align="center">
   <img src="assets/compression_ratio_comparison.png" alt="Compression ratio comparison bar chart" width="520"/>
