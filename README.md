@@ -13,35 +13,11 @@ Official implementation of **[A Variational Information Bottleneck Based Method 
 
 ---
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Key Results](#key-results)
-- [Edge Deployment](#edge-deployment-inference-on-raspberry-pi-3)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Usage](#usage)
-  - [CNN-LSTM Compression](#compress-a-cnn-lstm-model)
-  - [End-to-End LSTM Compression](#compress-an-end-to-end-lstm-model)
-  - [Evaluation](#evaluate-a-trained-model)
-  - [Model Conversion](#convert-vib-sparse-model-to-dense-compressed)
-- [Notes](#notes)
-- [Citation](#citation)
-
----
-
 ## Introduction
 
 Action recognition from video requires both spatial and temporal processing, making CNN-LSTM models large and resource-intensive — often unsuitable for edge deployment. Existing LSTM compression methods (TT-LSTM, BT-LSTM, TR-LSTM) reduce only the input-to-hidden matrix, leaving hidden state redundancy unaddressed. Group-lasso methods target hidden states but ignore the large input dimension. **No prior work compresses both simultaneously.**
 
 This paper proposes a **Variational Information Bottleneck (VIB)**-based pruning approach that places learnable bottleneck variables directly inside each LSTM gate. The model jointly prunes the input feature vector and the hidden state vector in a single end-to-end training pass. VIB layers are removed entirely at inference — only the compact LSTM matrices remain.
-
-### Contributions
-
-1. **Novel VIB-LSTM structure** — trains high-accuracy sparse LSTM models by applying information bottlenecks at every gate (input, forget, cell, output).
-2. **Principled sequential compression pipeline** — sparsifies pre-trained RNN/LSTM/GRU weight matrices with minimal hyperparameter tuning.
-3. **CNN-LSTM compression framework** — extends VIB to compress the feature input dimension of CNN-LSTM architectures, not just hidden states.
-4. **State-of-the-art compression with comparable accuracy** — validated on UCF11, HMDB51, and UCF101; outperforms all prior LSTM compression methods by a large margin.
 
 <table align="center">
   <tr>
@@ -55,6 +31,26 @@ This paper proposes a **Variational Information Bottleneck (VIB)**-based pruning
     </td>
   </tr>
 </table>
+
+### Contributions
+
+1. **Novel VIB-LSTM structure** — trains high-accuracy sparse LSTM models by applying information bottlenecks at every gate (input, forget, cell, output).
+2. **Principled sequential compression pipeline** — sparsifies pre-trained RNN/LSTM/GRU weight matrices with minimal hyperparameter tuning.
+3. **CNN-LSTM compression framework** — extends VIB to compress the feature input dimension of CNN-LSTM architectures, not just hidden states.
+4. **State-of-the-art compression with comparable accuracy** — validated on UCF11, HMDB51, and UCF101; outperforms all prior LSTM compression methods by a large margin.
+
+---
+
+## Table of Contents
+
+- [Key Results](#key-results)
+- [Edge Deployment](#edge-deployment-inference-on-raspberry-pi-3)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Notes](#notes)
+- [Citation](#citation)
+
 
 ---
 
